@@ -23,17 +23,25 @@ Reading 1,Dodge,Intrepid,distance,31.28257
 import csv
 import argparse
 
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--in-delimitier', dest='delimiter', default='|')
-parser.add_argument('--inputfile')
-parser.add_argument('--outputfile')
+parser.add_argument('--in-delimiter', dest='delimiter')
+parser.add_argument('--in-quote', dest='quote')
+parser.add_argument('infile', nargs='?')
+parser.add_argument('outfile', nargs='?')
 args = parser.parse_args()
 
-fieldnames = ['Reading', 'Make', 'Model', 'Type', 'Value']
-
-with open(args.inputfile, 'rt') as file:
-    reader = csv.reader(file, delimiter=args.delimiter)
-    with open(args.outputfile, 'wt') as outfile:
-        writer = csv.writer(outfile, 'excel', lineterminator='\n')
+with open(args.infile, 'rt') as file:
+    arguments = {}
+    if args.delimiter:
+        arguments['delimiter'] = args.delimiter
+    if args.quote:
+        arguments['quotechar'] = args.quote
+    if not args.delimiter and not args.quote:
+        arguments['dialect'] = csv.Sniffer().sniff(file.read())
+        file.seek(0)
+    reader = csv.reader(file, **arguments)
+    with open(args.outfile, 'wt') as outfile:
+        writer = csv.writer(outfile)
         for row in reader:
             writer.writerow(row)
